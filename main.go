@@ -3,6 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+
+	"github.com/<username>/Netpbm/pbm"
+	"github.com/<username>/Netpbm/pgm"
+	"github.com/<username>/Netpbm/ppm"
 )
 
 func main() {

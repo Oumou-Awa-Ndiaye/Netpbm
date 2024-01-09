@@ -4,13 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
 type PBM struct {
-	data        [][]bool
+	data          [][]bool
 	width, height int
-	magicNumber  string
+	magicNumber   string
 }
 
 func ReadPBM(filename string) (*PBM, error) {
@@ -19,7 +18,7 @@ func ReadPBM(filename string) (*PBM, error) {
 		return nil, err
 	}
 	defer file.Close()
-
+}
 func (pbm *PBM) Size() (int, int) {
 	return pbm.width, pbm.height
 }
