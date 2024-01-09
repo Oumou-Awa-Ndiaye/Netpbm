@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type PBM struct {
@@ -17,9 +19,6 @@ func ReadPBM(filename string) (*PBM, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-}
-
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
@@ -54,11 +53,7 @@ func ReadPBM(filename string) (*PBM, error) {
 		height:      height,
 		magicNumber: magicNumber,
 	}, nil
-
-
-
-
-
+}
 
 func (pbm *PBM) Size() (int, int) {
 	return pbm.width, pbm.height
