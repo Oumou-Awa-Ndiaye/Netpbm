@@ -1,5 +1,6 @@
 P1
-# This is a comment.
-4 3
-0 1 0
-1 0 1
+# Commentaire 
+5 3
+1 0 1 0 1
+0 1 0 1 0
+1 0 1 0 1

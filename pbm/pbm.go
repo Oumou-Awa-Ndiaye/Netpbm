@@ -1,4 +1,4 @@
-package Netpbm
+package pbm
 
 import (
 	"bufio"
@@ -19,6 +19,47 @@ func ReadPBM(filename string) (*PBM, error) {
 	}
 	defer file.Close()
 }
+
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	scanner.Scan()
+	magicNumber := scanner.Text()
+
+	scanner.Scan()
+	dimensions := strings.Fields(scanner.Text())
+	width, err := strconv.Atoi(dimensions[0])
+	if err != nil {
+		return nil, err
+	}
+	height, err := strconv.Atoi(dimensions[1])
+	if err != nil {
+		return nil, err
+	}
+
+	data := make([][]bool, height)
+	for i := range data {
+		data[i] = make([]bool, width)
+		scanner.Scan()
+		line := scanner.Text()
+		for j, c := range line {
+			data[i][j] = (c == '1')
+		}
+	}
+
+	return &PBM{
+		data:        data,
+		width:       width,
+		height:      height,
+		magicNumber: magicNumber,
+	}, nil
+
+
+
+
+
+
 func (pbm *PBM) Size() (int, int) {
 	return pbm.width, pbm.height
 }
