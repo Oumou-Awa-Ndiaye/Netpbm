@@ -27,14 +27,18 @@ func ReadPBM(filename string) (*PBM, error) {
 	magicNumber := scanner.Text()
 
 	scanner.Scan()
-	dimensions := strings.Fields(scanner.Text())
+	dimensions := strings.Split(scanner.Text(), " ")
+	if len(dimensions) != 2 {
+		return nil, fmt.Errorf("dimensions line should contain 2 elements, got: %v", dimensions)
+	}
+
 	width, err := strconv.Atoi(dimensions[0])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to convert width to int: %v", err)
 	}
 	height, err := strconv.Atoi(dimensions[1])
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to convert height to int: %v", err)
 	}
 
 	data := make([][]bool, height)
@@ -43,6 +47,9 @@ func ReadPBM(filename string) (*PBM, error) {
 		scanner.Scan()
 		line := scanner.Text()
 		for j, c := range line {
+			if j >= width {
+				return nil, fmt.Errorf("index out of range in line %d, width: %d, line length: %d", i+2, width, len(line))
+			}
 			data[i][j] = (c == '1')
 		}
 	}

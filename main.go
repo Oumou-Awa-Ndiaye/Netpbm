@@ -5,25 +5,50 @@ import (
 	"Netpbm/pgm"
 	"Netpbm/ppm"
 	"fmt"
+	"log"
 )
 
 func main() {
-	pbmImage, err := pbm.ReadPBM("pbm/mon_image.pbm")
+
+	pbmFile, err := pbm.ReadPBM("pbm/image.pbm")
 	if err != nil {
-		fmt.Println("Erreur lors de la lecture de PBM :", err)
-		return
+		log.Fatal(err)
 	}
 
-	pgmImage, err := pgm.ReadPGM("pgm/mon_image.pgm")
+	pbmFile.Invert()
+	pbmFile.Flip()
+
+	err = pbmFile.Save("image_pbm_modifie.pbm")
 	if err != nil {
-		fmt.Println("Erreur lors de la lecture de PGM :", err)
-		return
+		log.Fatal(err)
+	}
+	fmt.Println("Image PBM modifiée sauvegardée avec succès.")
+
+	pgmFile, err := pgm.ReadPGM("pgm/image.pgm")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	ppmImage, err := ppm.ReadPPM("ppm/mon_image.ppm")
+	pgmFile.Invert()
+	pgmFile.Rotate90CW()
+
+	err = pgmFile.Save("image_pgm_modifie.pgm")
 	if err != nil {
-		fmt.Println("Erreur lors de la lecture de PPM :", err)
-		return
+		log.Fatal(err)
+	}
+	fmt.Println("Image PGM modifiée sauvegardée avec succès.")
+
+	ppmFile, err := ppm.ReadPPM("ppm/image.ppm")
+	if err != nil {
+		log.Fatal(err)
 	}
 
+	ppmFile.Invert()
+	ppmFile.Flip()
+
+	err = ppmFile.Save("image_ppm_modifie.ppm")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Image PPM modifiée sauvegardée avec succès.")
 }
