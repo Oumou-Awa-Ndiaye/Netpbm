@@ -1,10 +1,9 @@
-package pbm
+package main
 
 import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -23,43 +22,23 @@ func ReadPBM(filename string) (*PBM, error) {
 
 	scanner := bufio.NewScanner(file)
 
+	var pbm PBM
 	scanner.Scan()
-	magicNumber := scanner.Text()
+	pbm.magicNumber = scanner.Text()
 
 	scanner.Scan()
-	dimensions := strings.Split(scanner.Text(), " ")
-	if len(dimensions) != 2 {
-		return nil, fmt.Errorf("dimensions line should contain 2 elements, got: %v", dimensions)
-	}
+	fmt.Sscanf(scanner.Text(), "%d %d", &pbm.width, &pbm.height)
 
-	width, err := strconv.Atoi(dimensions[0])
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert width to int: %v", err)
-	}
-	height, err := strconv.Atoi(dimensions[1])
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert height to int: %v", err)
-	}
-
-	data := make([][]bool, height)
-	for i := range data {
-		data[i] = make([]bool, width)
-		scanner.Scan()
-		line := scanner.Text()
-		for j, c := range line {
-			if j >= width {
-				return nil, fmt.Errorf("index out of range in line %d, width: %d, line length: %d", i+2, width, len(line))
-			}
-			data[i][j] = (c == '1')
+	pbm.data = make([][]bool, pbm.height)
+	for i := 0; i < pbm.height && scanner.Scan(); i++ {
+		line := strings.Fields(scanner.Text())
+		pbm.data[i] = make([]bool, pbm.width)
+		for j := 0; j < pbm.width; j++ {
+			pbm.data[i][j] = line[j] == "1"
 		}
 	}
 
-	return &PBM{
-		data:        data,
-		width:       width,
-		height:      height,
-		magicNumber: magicNumber,
-	}, nil
+	return &pbm, nil
 }
 
 func (pbm *PBM) Size() (int, int) {
@@ -83,8 +62,7 @@ func (pbm *PBM) Save(filename string) error {
 
 	writer := bufio.NewWriter(file)
 
-	fmt.Fprintf(writer, "%s\n", pbm.magicNumber)
-	fmt.Fprintf(writer, "%d %d\n", pbm.width, pbm.height)
+	fmt.Fprintf(writer, "%s\n%d %d\n", pbm.magicNumber, pbm.width, pbm.height)
 
 	for _, row := range pbm.data {
 		for _, pixel := range row {
@@ -118,9 +96,7 @@ func (pbm *PBM) Flip() {
 
 func (pbm *PBM) Flop() {
 	for y := 0; y < pbm.height/2; y++ {
-		for x := 0; x < pbm.width; x++ {
-			pbm.data[y][x], pbm.data[pbm.height-y-1][x] = pbm.data[pbm.height-y-1][x], pbm.data[y][x]
-		}
+		pbm.data[y], pbm.data[pbm.height-y-1] = pbm.data[pbm.height-y-1], pbm.data[y]
 	}
 }
 
