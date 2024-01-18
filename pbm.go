@@ -95,21 +95,20 @@ func (pbm *PBM) Invert() {
 	}
 }
 
-/*
-	func (pbm *PBM) Flip() {
-		for y := 0; y < pbm.height; y++ {
-			for x := 0; x < pbm.width/2; x++ {
-				pbm.data[y][x], pbm.data[y][pbm.width-x-1] = pbm.data[y][pbm.width-x-1], pbm.data[y][x]
-			}
+func (pbm *PBM) Flip() {
+	for y := 0; y < pbm.height; y++ {
+		for x := 0; x < pbm.width/2; x++ {
+			pbm.data[y][x], pbm.data[y][pbm.width-x-1] = pbm.data[y][pbm.width-x-1], pbm.data[y][x]
 		}
 	}
+}
 
-	func (pbm *PBM) Flop() {
-		for y := 0; y < pbm.height/2; y++ {
-			pbm.data[y], pbm.data[pbm.height-y-1] = pbm.data[pbm.height-y-1], pbm.data[y]
-		}
+func (pbm *PBM) Flop() {
+	for y := 0; y < pbm.height/2; y++ {
+		pbm.data[y], pbm.data[pbm.height-y-1] = pbm.data[pbm.height-y-1], pbm.data[y]
 	}
-*/
+}
+
 func (pbm *PBM) SetMagicNumber(magicNumber string) {
 	pbm.magicNumber = magicNumber
 }

@@ -38,9 +38,20 @@ func ReadPGM(filename string) (*PGM, error) {
 		line := strings.Fields(scanner.Text())
 		pgm.data[i] = make([]uint8, pgm.width)
 		for j := 0; j < pgm.width; j++ {
-			fmt.Sscanf(line[j], "%d", &pgm.data[i][j])
+
+			if pgm.magicNumber == "P2" {
+				fmt.Sscanf(line[j], "%d", &pgm.data[i][j])
+			} else if pgm.magicNumber == "P5" {
+				pgm.data[i][j] = uint8(line[j][0]) // Utiliser le premier caractère (octet) de la valeur
+			}
 		}
 	}
+
+	fmt.Println("Magic Number:", pgm.magicNumber)
+	fmt.Println("Width:", pgm.width)
+	fmt.Println("Height:", pgm.height)
+	fmt.Println("Max:", pgm.max)
+	fmt.Println("Data:", pgm.data)
 
 	return &pgm, nil
 }
