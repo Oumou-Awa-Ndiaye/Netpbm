@@ -133,7 +133,6 @@ func TestReadPBM(t *testing.T) {
 	// }
 }
 
-/*
 func TestSize(t *testing.T) {
 	pbm, err := ReadPBM("./testImages/pbm/testP1.pbm")
 	if err != nil {
@@ -197,7 +196,9 @@ func TestSave(t *testing.T) {
 			t.Error("Wrong data")
 		}
 	}
-	/*Je n'ai pas réussi le P4*/
+}
+
+/*Je n'ai pas réussi le P4*/
 /*
 	pbm, err = ReadPBM("./testImages/pbm/testP4.pbm")
 	if err != nil {
