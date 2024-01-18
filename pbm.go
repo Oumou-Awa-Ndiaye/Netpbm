@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type PBM struct {
@@ -30,11 +32,17 @@ func ReadPBM(filename string) (*PBM, error) {
 
 	pbm.data = make([][]bool, pbm.height)
 	for i := 0; i < pbm.height && scanner.Scan(); i++ {
-		line := scanner.Text()
+		line := strings.Fields(scanner.Text())
 		pbm.data[i] = make([]bool, pbm.width)
 		for j := 0; j < pbm.width; j++ {
-			if j < len(line) && line[j] == '1' {
-				pbm.data[i][j] = true
+			if j < len(line) {
+				value, err := strconv.Atoi(line[j])
+				if err != nil {
+					return nil, err
+				}
+				pbm.data[i][j] = value != 0
+			} else {
+				return nil, fmt.Errorf("Not enough data at line %d", i+1)
 			}
 		}
 	}
@@ -42,6 +50,7 @@ func ReadPBM(filename string) (*PBM, error) {
 	return &pbm, nil
 }
 
+/*
 func (pbm *PBM) Size() (int, int) {
 	return pbm.width, pbm.height
 }
@@ -104,3 +113,4 @@ func (pbm *PBM) Flop() {
 func (pbm *PBM) SetMagicNumber(magicNumber string) {
 	pbm.magicNumber = magicNumber
 }
+*/
