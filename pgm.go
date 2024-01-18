@@ -1,4 +1,4 @@
-package netpbm
+package Netpbm
 
 import (
 	"bufio"
@@ -11,7 +11,7 @@ type PGM struct {
 	data          [][]uint8
 	width, height int
 	magicNumber   string
-	max           int
+	max           uint8
 }
 
 func ReadPGM(filename string) (*PGM, error) {
@@ -105,7 +105,7 @@ func (pgm *PGM) SetMagicNumber(magicNumber string) {
 }
 
 func (pgm *PGM) SetMaxValue(maxValue uint8) {
-	pgm.max = int(maxValue)
+	pgm.max = uint8(maxValue)
 }
 
 func (pgm *PGM) Rotate90CW() {

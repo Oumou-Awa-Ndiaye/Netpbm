@@ -1,4 +1,4 @@
-package netpbm
+package Netpbm
 
 import (
 	"bufio"

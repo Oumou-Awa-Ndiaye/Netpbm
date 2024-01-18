@@ -1,4 +1,4 @@
-package netpbm
+package Netpbm
 
 import (
 	"bufio"
@@ -165,7 +165,7 @@ func (ppm *PPM) ToPGM() *PGM {
 		width:       ppm.width,
 		height:      ppm.height,
 		magicNumber: "P2",
-		max:         ppm.max,
+		max:         uint8(ppm.max),
 	}
 }
 
