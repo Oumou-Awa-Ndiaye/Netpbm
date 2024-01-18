@@ -12,7 +12,9 @@ const (
 )
 
 func TestReadPPM(t *testing.T) {
+
 	/*Here if you look closely I used the same procedure as pbm and pgm*/
+
 	testFilename := "/imagesTest/ppmImages/imageP3.ppm"
 	file, err := os.Create(testFilename)
 	if err != nil {
