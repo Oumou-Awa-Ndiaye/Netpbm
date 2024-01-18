@@ -1,4 +1,4 @@
-package main
+package netpbm
 
 import (
 	"bufio"
@@ -169,13 +169,6 @@ func (ppm *PPM) ToPGM() *PGM {
 	}
 }
 
-type PGM struct {
-	data          [][]uint8
-	width, height int
-	magicNumber   string
-	max           int
-}
-
 func (ppm *PPM) ToPBM() *PBM {
 	pbmData := make([][]bool, ppm.height)
 	for y := 0; y < ppm.height; y++ {
@@ -192,12 +185,6 @@ func (ppm *PPM) ToPBM() *PBM {
 		height:      ppm.height,
 		magicNumber: "P1",
 	}
-}
-
-type PBM struct {
-	data          [][]bool
-	width, height int
-	magicNumber   string
 }
 
 func (ppm *PPM) DrawLine(p1, p2 Point, color Pixel) {

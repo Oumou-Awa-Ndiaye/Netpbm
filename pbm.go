@@ -1,10 +1,9 @@
-package main
+package netpbm
 
 import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
 type PBM struct {
@@ -31,10 +30,12 @@ func ReadPBM(filename string) (*PBM, error) {
 
 	pbm.data = make([][]bool, pbm.height)
 	for i := 0; i < pbm.height && scanner.Scan(); i++ {
-		line := strings.Fields(scanner.Text())
+		line := scanner.Text()
 		pbm.data[i] = make([]bool, pbm.width)
 		for j := 0; j < pbm.width; j++ {
-			pbm.data[i][j] = line[j] == "1"
+			if j < len(line) && line[j] == '1' {
+				pbm.data[i][j] = true
+			}
 		}
 	}
 
