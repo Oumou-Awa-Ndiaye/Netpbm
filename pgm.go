@@ -34,11 +34,14 @@ func ReadPGM(filename string) (*PGM, error) {
 	fmt.Sscanf(scanner.Text(), "%d", &pgm.max)
 
 	pgm.data = make([][]uint8, pgm.height)
-	for i := 0; i < pgm.height && scanner.Scan(); i++ {
+	for i := 0; i < pgm.height; i++ {
+		scanner.Scan()
 		line := strings.Fields(scanner.Text())
+		if len(line) != pgm.width {
+			return nil, fmt.Errorf("incorrect number of pixels in the line")
+		}
 		pgm.data[i] = make([]uint8, pgm.width)
 		for j := 0; j < pgm.width; j++ {
-
 			if pgm.magicNumber == "P2" {
 				fmt.Sscanf(line[j], "%d", &pgm.data[i][j])
 			} else if pgm.magicNumber == "P5" {
@@ -47,70 +50,65 @@ func ReadPGM(filename string) (*PGM, error) {
 		}
 	}
 
-	fmt.Println("Magic Number:", pgm.magicNumber)
-	fmt.Println("Width:", pgm.width)
-	fmt.Println("Height:", pgm.height)
-	fmt.Println("Max:", pgm.max)
-	fmt.Println("Data:", pgm.data)
-
 	return &pgm, nil
 }
 
-func (pgm *PGM) Size() (int, int) {
-	return pgm.width, pgm.height
-}
-
-func (pgm *PGM) At(x, y int) uint8 {
-	return pgm.data[y][x]
-}
-
-func (pgm *PGM) Set(x, y int, value uint8) {
-	pgm.data[y][x] = value
-}
-
-func (pgm *PGM) Save(filename string) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
+/*
+	func (pgm *PGM) Size() (int, int) {
+		return pgm.width, pgm.height
 	}
-	defer file.Close()
 
-	writer := bufio.NewWriter(file)
+	func (pgm *PGM) At(x, y int) uint8 {
+		return pgm.data[y][x]
+	}
 
-	fmt.Fprintf(writer, "%s\n%d %d\n%d\n", pgm.magicNumber, pgm.width, pgm.height, pgm.max)
+	func (pgm *PGM) Set(x, y int, value uint8) {
+		pgm.data[y][x] = value
+	}
 
-	for _, row := range pgm.data {
-		for _, pixel := range row {
-			fmt.Fprintf(writer, "%d ", pixel)
+	func (pgm *PGM) Save(filename string) error {
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
 		}
-		fmt.Fprintln(writer)
-	}
+		defer file.Close()
 
-	return writer.Flush()
-}
+		writer := bufio.NewWriter(file)
 
-func (pgm *PGM) Invert() {
-	for y := 0; y < pgm.height; y++ {
-		for x := 0; x < pgm.width; x++ {
-			pgm.data[y][x] = uint8(pgm.max) - pgm.data[y][x]
+		fmt.Fprintf(writer, "%s\n%d %d\n%d\n", pgm.magicNumber, pgm.width, pgm.height, pgm.max)
+
+		for _, row := range pgm.data {
+			for _, pixel := range row {
+				fmt.Fprintf(writer, "%d ", pixel)
+			}
+			fmt.Fprintln(writer)
 		}
-	}
-}
 
-func (pgm *PGM) Flip() {
-	for y := 0; y < pgm.height; y++ {
-		for x := 0; x < pgm.width/2; x++ {
-			pgm.data[y][x], pgm.data[y][pgm.width-x-1] = pgm.data[y][pgm.width-x-1], pgm.data[y][x]
+		return writer.Flush()
+	}
+
+	func (pgm *PGM) Invert() {
+		for y := 0; y < pgm.height; y++ {
+			for x := 0; x < pgm.width; x++ {
+				pgm.data[y][x] = uint8(pgm.max) - pgm.data[y][x]
+			}
 		}
 	}
-}
 
-func (pgm *PGM) Flop() {
-	for y := 0; y < pgm.height/2; y++ {
-		pgm.data[y], pgm.data[pgm.height-y-1] = pgm.data[pgm.height-y-1], pgm.data[y]
+	func (pgm *PGM) Flip() {
+		for y := 0; y < pgm.height; y++ {
+			for x := 0; x < pgm.width/2; x++ {
+				pgm.data[y][x], pgm.data[y][pgm.width-x-1] = pgm.data[y][pgm.width-x-1], pgm.data[y][x]
+			}
+		}
 	}
-}
 
+	func (pgm *PGM) Flop() {
+		for y := 0; y < pgm.height/2; y++ {
+			pgm.data[y], pgm.data[pgm.height-y-1] = pgm.data[pgm.height-y-1], pgm.data[y]
+		}
+	}
+*/
 func (pgm *PGM) SetMagicNumber(magicNumber string) {
 	pgm.magicNumber = magicNumber
 }
