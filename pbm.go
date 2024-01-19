@@ -14,13 +14,14 @@ type PBM struct {
 	magicNumber   string
 }
 
+/* Here we have width, height, and pixel data.*/
 func ReadPBM(filename string) (*PBM, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
-
+	/*Là je crée un scanner pour lire dans le fichier puisque j'ai déjà fait du java*/
 	scanner := bufio.NewScanner(file)
 
 	var pbm PBM
@@ -33,7 +34,7 @@ func ReadPBM(filename string) (*PBM, error) {
 	pbm.data = make([][]bool, pbm.height)
 	for i := 0; i < pbm.height && scanner.Scan(); i++ {
 		line := strings.Fields(scanner.Text())
-		pbm.data[i] = make([]bool, pbm.width)
+		pbm.data[i] = make([]bool, pbm.width) /*Here it's initialize the slice for storing pixel values for the current line.*/
 		for j := 0; j < pbm.width; j++ {
 			if j < len(line) {
 				value, err := strconv.Atoi(line[j])

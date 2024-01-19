@@ -40,7 +40,7 @@ func ReadPPM(filename string) (*PPM, error) {
 
 	ppm := &PPM{}
 
-	// Lire et analyser les informations d'en-tête
+	/* ce bloc nous permet de lire et analyser les informations d'en-tête*/
 	if !scanner.Scan() {
 		return nil, errors.New("EOF while reading magic number")
 	}
@@ -64,12 +64,11 @@ func ReadPPM(filename string) (*PPM, error) {
 	}
 	ppm.max = uint8(max)
 
-	// Read pixel
 	ppm.data = make([][]Pixel, ppm.height)
 	for i := range ppm.data {
 		ppm.data[i] = make([]Pixel, ppm.width)
 		for j := 0; j < ppm.width; j++ {
-			// Exit if EOF is detected during pixel reading
+			/*Exit if EOF is detected during pixel reading*/
 			if !scanner.Scan() {
 				if scanner.Err() == nil {
 					return nil, fmt.Errorf("Unexpected EOF while reading pixel data (row: %d, column: %d)", i, j)
@@ -263,7 +262,6 @@ func (ppm *PPM) DrawFilledRectangle(p1 Point, width, height int, color Pixel) {
 	}
 }
 
-// DrawCircle draws a circle.
 func (ppm *PPM) DrawCircle(center Point, radius int, color Pixel) {
 	for y := -radius; y <= radius; y++ {
 		for x := -radius; x <= radius; x++ {
@@ -274,7 +272,6 @@ func (ppm *PPM) DrawCircle(center Point, radius int, color Pixel) {
 	}
 }
 
-// DrawFilledCircle draws a filled circle.
 func (ppm *PPM) DrawFilledCircle(center Point, radius int, color Pixel) {
 	for y := -radius; y <= radius; y++ {
 		for x := -radius; x <= radius; x++ {
