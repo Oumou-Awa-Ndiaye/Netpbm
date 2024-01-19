@@ -2,6 +2,7 @@ package Netpbm
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -17,7 +18,7 @@ type PPM struct {
 	data          [][]Pixel
 	width, height int
 	magicNumber   string
-	max           int
+	max           uint8
 }
 
 type Point struct {
@@ -33,28 +34,40 @@ func ReadPPM(filename string) (*PPM, error) {
 
 	scanner := bufio.NewScanner(file)
 
+	// Read magic number
 	scanner.Scan()
 	magicNumber := scanner.Text()
 
+	// Read header
 	scanner.Scan()
 	header := scanner.Text()
 	headerParts := strings.Fields(header)
+	if len(headerParts) != 3 {
+		return nil, fmt.Errorf("invalid header format")
+	}
 	width, _ := strconv.Atoi(headerParts[0])
 	height, _ := strconv.Atoi(headerParts[1])
 	max, _ := strconv.Atoi(headerParts[2])
 
+	// Read image data
 	data := make([][]Pixel, height)
 	for i := 0; i < height; i++ {
-		scanner.Scan()
+		if !scanner.Scan() {
+			return nil, fmt.Errorf("unexpected end of file")
+		}
 		rowData := scanner.Text()
 		rowDataParts := strings.Fields(rowData)
+
+		if len(rowDataParts) != width*3 {
+			return nil, fmt.Errorf("unexpected number of values in row %d", i+1)
+		}
+
 		row := make([]Pixel, width)
-		for j := 0; j < width; j++ {
+		for j := 0; j < width*3; j += 3 {
 			r, _ := strconv.Atoi(rowDataParts[j])
 			g, _ := strconv.Atoi(rowDataParts[j+1])
 			b, _ := strconv.Atoi(rowDataParts[j+2])
-			row[j] = Pixel{uint8(r), uint8(g), uint8(b)}
-			j += 2
+			row[j/3] = Pixel{uint8(r), uint8(g), uint8(b)}
 		}
 		data[i] = row
 	}
@@ -64,7 +77,7 @@ func ReadPPM(filename string) (*PPM, error) {
 		width:       width,
 		height:      height,
 		magicNumber: magicNumber,
-		max:         max,
+		max:         uint8(max),
 	}, nil
 }
 
@@ -132,7 +145,8 @@ func (ppm *PPM) SetMagicNumber(magicNumber string) {
 }
 
 func (ppm *PPM) SetMaxValue(maxValue uint8) {
-	ppm.max = int(maxValue)
+	ppm.max = uint8(maxValue)
+
 }
 
 func (ppm *PPM) Rotate90CW() {
@@ -175,7 +189,7 @@ func (ppm *PPM) ToPBM() *PBM {
 		pbmData[y] = make([]bool, ppm.width)
 		for x := 0; x < ppm.width; x++ {
 			grayValue := (int(ppm.data[y][x].R) + int(ppm.data[y][x].G) + int(ppm.data[y][x].B)) / 3
-			pbmData[y][x] = grayValue > ppm.max/2
+			pbmData[y][x] = grayValue > int(ppm.max)/2
 		}
 	}
 
@@ -297,7 +311,11 @@ func (ppm *PPM) DrawPolygon(points []Point, color Pixel) {
 	}
 	ppm.DrawLine(points[len(points)-1], points[0], color)
 }
-func (ppm *PPM) DrawFilledPolygon(points []Point, color Pixel) {
+func (ppm *PPM) DrawFilledPolygon(points []Point, color Pixel) error {
+	if ppm == nil {
+		return errors.New("PPM structure is nil")
+	}
+
 	minY := points[0].Y
 	maxY := points[0].Y
 
@@ -309,6 +327,11 @@ func (ppm *PPM) DrawFilledPolygon(points []Point, color Pixel) {
 			maxY = point.Y
 		}
 	}
+
+	if minY < 0 || maxY >= ppm.height {
+		return errors.New("Invalid Y coordinates for DrawFilledPolygon")
+	}
+
 	xCoordinates := make([][]int, maxY-minY+1)
 
 	for i := 0; i < len(points); i++ {
@@ -346,8 +369,11 @@ func (ppm *PPM) DrawFilledPolygon(points []Point, color Pixel) {
 			}
 		}
 	}
+
+	return nil
 }
-func (ppm *PPM) DrawKochSnowflake(center Point, radius, depth int, color Pixel) {
+
+/*func (ppm *PPM) DrawKochSnowflake(center Point, radius, depth int, color Pixel) {
 	angles := []float64{
 		0.0,
 		(2.0 * math.Pi / 3.0),
@@ -392,3 +418,4 @@ func (ppm *PPM) DrawKochSnowflake(center Point, radius, depth int, color Pixel) 
 	drawKochSegment(points[1], points[2], depth)
 	drawKochSegment(points[2], points[0], depth)
 }
+*/

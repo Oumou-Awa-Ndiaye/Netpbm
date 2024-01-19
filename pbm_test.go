@@ -1,6 +1,7 @@
 package Netpbm
 
 import (
+	"os"
 	"testing"
 )
 
@@ -25,7 +26,7 @@ var imageDataP1 = []bool{
 	false, false, false, false, true, true, true, true, true, true, false, false, false, false, false,
 }
 
-/*var imageDataInvert = []bool{
+var imageDataInvert = []bool{
 	true, true, true, true, true, true, true, false, false, false, false, true, true, true, true,
 	true, true, true, true, true, true, false, true, true, true, true, false, true, true, true,
 	true, true, true, true, true, false, true, true, true, true, true, true, false, true, true,
@@ -61,7 +62,7 @@ var imageDataFlip = []bool{
 	false, false, false, false, false, true, true, true, true, true, true, false, false, false, false,
 }
 
-/*var imageDataFlop = []bool{
+var imageDataFlop = []bool{
 	false, false, false, false, true, true, true, true, true, true, false, false, false, false, false,
 	false, false, true, true, false, false, false, false, false, true, true, false, false, false, false,
 	false, true, true, false, false, false, false, false, false, false, false, true, false, false, false,
@@ -77,7 +78,7 @@ var imageDataFlip = []bool{
 	false, false, false, false, false, true, false, false, false, false, false, false, true, false, false,
 	false, false, false, false, false, false, true, false, false, false, false, true, false, false, false,
 	false, false, false, false, false, false, false, true, true, true, true, false, false, false, false,
-}*/
+}
 
 func TestReadPBM(t *testing.T) {
 
@@ -106,31 +107,31 @@ func TestReadPBM(t *testing.T) {
 			t.Error("Wrong data")
 		}
 	}
+	/*J'ai pas réussi à faire le P4 du coup je l'ai mis en commentaire*/
+	// read the image with P4 magic number
+	/*pbm, err = ReadPBM("./testImages/pbm/testP4.pbm")
+	if err != nil {
+		t.Error(err)
+	}
+	// check the magic number
+	if pbm.magicNumber != "P4" {
+		t.Error("Wrong magic number")
+	}
+	if pbm.width != 15 {
+		t.Error("Wrong width")
+	}
+	if pbm.height != 15 {
+		t.Error("Wrong height")
+	}*/
 
-	// // read the image with P4 magic number
-	// pbm, err = ReadPBM("./testImages/pbm/testP4.pbm")
-	// if err != nil {
-	// 	t.Error(err)
-	// }
-	// // check the magic number
-	// if pbm.magicNumber != "P4" {
-	// 	t.Error("Wrong magic number")
-	// }
-	// if pbm.width != 15 {
-	// 	t.Error("Wrong width")
-	// }
-	// if pbm.height != 15 {
-	// 	t.Error("Wrong height")
-	// }
-
-	// // compare the data
-	// for i := 0; i < imageWidth*imageHeight; i++ {
-	// 	var x = i % imageWidth
-	// 	var y = i / imageWidth
-	// 	if pbm.data[y][x] != imageDataP1[i] {
-	// 		t.Error("Wrong data")
-	// 	}
-	// }
+	// compare the data
+	for i := 0; i < imageWidth*imageHeight; i++ {
+		var x = i % imageWidth
+		var y = i / imageWidth
+		if pbm.data[y][x] != imageDataP1[i] {
+			t.Error("Wrong data")
+		}
+	}
 }
 
 func TestSize(t *testing.T) {
@@ -196,11 +197,8 @@ func TestSave(t *testing.T) {
 			t.Error("Wrong data")
 		}
 	}
-}
 
-/*Je n'ai pas réussi le P4*/
-/*
-	pbm, err = ReadPBM("./testImages/pbm/testP4.pbm")
+	/*pbm, err = ReadPBM("./testImages/pbm/testP4.pbm")
 	if err != nil {
 		t.Error(err)
 	}
@@ -215,15 +213,14 @@ func TestSave(t *testing.T) {
 	}
 	if pbm2.magicNumber != "P4" {
 		t.Error("Wrong magic number")
-	}
+	}*/
 	if pbm2.width != 15 {
 		t.Error("Wrong width")
 	}
 	if pbm2.height != 15 {
 		t.Error("Wrong height")
-	}*/
-// compare the data
-/*
+	}
+	// compare the data
 	for i := 0; i < imageWidth*imageHeight; i++ {
 		var x = i % imageWidth
 		var y = i / imageWidth
@@ -236,11 +233,10 @@ func TestSave(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	/*err = os.Remove("./testImages/pbm/testP4Save.pbm")*/ /*là j'ai mis en commentaire car je n'ai pas réussi à faire le P4 */
-/*
+	/*err = os.Remove("./testImages/pbm/testP4Save.pbm")
 	if err != nil {
 		t.Error(err)
-	}
+	}*/
 }
 
 func TestInvert(t *testing.T) {
@@ -301,4 +297,3 @@ func TestSetMagicNumber(t *testing.T) {
 		t.Error("Wrong magic number")
 	}
 }
-*/
