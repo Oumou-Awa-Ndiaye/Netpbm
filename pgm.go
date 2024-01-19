@@ -2,6 +2,7 @@ package Netpbm
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -17,55 +18,101 @@ type PGM struct {
 }
 
 func ReadPGM(filename string) (*PGM, error) {
+	pgm := PGM{}
+
+	// Open the file
 	file, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error opening file: %v", err)
 	}
 	defer file.Close()
 
+	// Scanner for text-based information
 	scanner := bufio.NewScanner(file)
 
-	pgm := &PGM{}
-
-	// Read magic number
+	// Get magic number
 	scanner.Scan()
 	pgm.magicNumber = scanner.Text()
+	if pgm.magicNumber != "P5" && pgm.magicNumber != "P2" {
+		return nil, fmt.Errorf("invalid magic number: %s", pgm.magicNumber)
+	}
 
-	// Read width, height, and max
-	for i := 0; i < 3; i++ {
-		scanner.Scan()
-		line := scanner.Text()
-		if strings.HasPrefix(line, "#") {
-			// Skip comments
-			i--
+	// Get dimensions
+	scanner.Scan()
+	sepa := strings.Fields(scanner.Text())
+	if len(sepa) != 2 {
+		return nil, errors.New("bad input format")
+	}
+	pgm.width, _ = strconv.Atoi(sepa[0])
+	pgm.height, _ = strconv.Atoi(sepa[1])
+
+	// Check for valid values
+	if pgm.width <= 0 || pgm.height <= 0 {
+		return nil, fmt.Errorf("invalid size: %d x %d", pgm.width, pgm.height)
+	}
+
+	// Get max value
+	scanner.Scan()
+	maxValue, err := strconv.Atoi(scanner.Text())
+	if err != nil {
+		return nil, fmt.Errorf("error parsing max value: %v", err)
+	}
+	pgm.max = uint8(maxValue)
+
+	// Move to the beginning of binary data
+	for scanner.Scan() {
+		if scanner.Text() == "" || strings.HasPrefix(scanner.Text(), "#") {
 			continue
-		}
-
-		switch i {
-		case 0:
-			fmt.Sscanf(line, "%d %d", &pgm.width, &pgm.height)
-		case 2:
-			maxValue, _ := strconv.Atoi(line)
-			pgm.max = uint8(maxValue)
+		} else {
+			break
 		}
 	}
+	/*J'ai pas fait réussi  le p5 aussi c'est en commentaire */
+	// P5 format (raw binary)
+	if pgm.magicNumber == "P5" {
+		/*  buffer := make([]byte, pgm.width*pgm.height)
 
-	// Read pixel data
-	pgm.data = make([][]uint8, pgm.height)
-	for i := range pgm.data {
-		pgm.data[i] = make([]uint8, pgm.width)
-		scanner.Scan()
-		line := scanner.Text()
-		values := strings.Fields(line)
-		for j, v := range values {
-			pixelValue, _ := strconv.Atoi(v)
-			pgm.data[i][j] = uint8(pixelValue)
+			// Read the binary data directly into the buffer
+		    _, err := file.Read(buffer)
+		    if err != nil {
+			    return nil, fmt.Errorf("error reading binary data: %v", err)
+			 }
+
+			// Populate pgm.data with the binary data
+			pgm.data = make([][]uint8, pgm.height)
+			for i := 0; i < pgm.height; i++ {
+				pgm.data[i] = make([]uint8, pgm.width)
+			for j := 0; j < pgm.width; j++ {
+				 pgm.data[i][j] = buffer[i*pgm.width+j]
+		   }
+			}*/
+	} else if pgm.magicNumber == "P2" {
+		// P2 format (ASCII)
+		pgm.data = make([][]uint8, pgm.height)
+		for i := 0; i < pgm.height; i++ {
+			pgm.data[i] = make([]uint8, pgm.width)
+			lineValues := strings.Fields(scanner.Text())
+			if len(lineValues) != pgm.width {
+				return nil, fmt.Errorf("bad row length: %d", len(lineValues))
+			}
+			for j := 0; j < pgm.width; j++ {
+				value, err := strconv.Atoi(lineValues[j])
+				if err != nil {
+					return nil, fmt.Errorf("error reading pixel value: %v", err)
+				}
+				pgm.data[i][j] = uint8(value)
+			}
+			if !scanner.Scan() {
+				break // Break if there are no more lines
+			}
 		}
+	} else {
+		// Handle other PGM formats here if needed
+		return nil, fmt.Errorf("unsupported PGM format: %s", pgm.magicNumber)
 	}
 
-	return pgm, nil
+	return &pgm, nil
 }
-
 func (pgm *PGM) Size() (int, int) {
 	return pgm.width, pgm.height
 }
@@ -132,7 +179,18 @@ func (pgm *PGM) SetMagicNumber(magicNumber string) {
 }
 
 func (pgm *PGM) SetMaxValue(maxValue uint8) {
-	pgm.max = uint8(maxValue)
+	// Calculate the scaling factor to adjust existing pixel values
+	scaleFactor := float64(maxValue) / float64(pgm.max)
+
+	// Update max value
+	pgm.max = maxValue
+
+	// Update pixel values based on the new max value
+	for y := 0; y < pgm.height; y++ {
+		for x := 0; x < pgm.width; x++ {
+			pgm.data[y][x] = uint8(float64(pgm.data[y][x]) * scaleFactor)
+		}
+	}
 }
 
 func (pgm *PGM) Rotate90CW() {
@@ -149,12 +207,15 @@ func (pgm *PGM) Rotate90CW() {
 	pgm.width, pgm.height = pgm.height, pgm.width
 }
 
+// ToPBM converts PGM to PBM format.
 func (pgm *PGM) ToPBM() *PBM {
 	pbmData := make([][]bool, pgm.height)
+
 	for y := 0; y < pgm.height; y++ {
 		pbmData[y] = make([]bool, pgm.width)
+
 		for x := 0; x < pgm.width; x++ {
-			pbmData[y][x] = pgm.data[y][x] > uint8(pgm.max/2)
+			pbmData[y][x] = pgm.data[y][x] < uint8(pgm.max)/2
 		}
 	}
 

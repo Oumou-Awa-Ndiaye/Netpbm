@@ -25,6 +25,10 @@ type Point struct {
 	X, Y int
 }
 
+func (ppm *PPM) Size() (int, int) {
+	return ppm.width, ppm.height
+}
+
 func ReadPPM(filename string) (*PPM, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -34,55 +38,65 @@ func ReadPPM(filename string) (*PPM, error) {
 
 	scanner := bufio.NewScanner(file)
 
-	// Read magic number
-	scanner.Scan()
-	magicNumber := scanner.Text()
+	ppm := &PPM{}
 
-	// Read header
-	scanner.Scan()
-	header := scanner.Text()
-	headerParts := strings.Fields(header)
-	if len(headerParts) != 3 {
-		return nil, fmt.Errorf("invalid header format")
+	// Lire et analyser les informations d'en-tête
+	if !scanner.Scan() {
+		return nil, errors.New("EOF while reading magic number")
 	}
-	width, _ := strconv.Atoi(headerParts[0])
-	height, _ := strconv.Atoi(headerParts[1])
-	max, _ := strconv.Atoi(headerParts[2])
+	ppm.magicNumber = scanner.Text()
 
-	// Read image data
-	data := make([][]Pixel, height)
-	for i := 0; i < height; i++ {
-		if !scanner.Scan() {
-			return nil, fmt.Errorf("unexpected end of file")
-		}
-		rowData := scanner.Text()
-		rowDataParts := strings.Fields(rowData)
-
-		if len(rowDataParts) != width*3 {
-			return nil, fmt.Errorf("unexpected number of values in row %d", i+1)
-		}
-
-		row := make([]Pixel, width)
-		for j := 0; j < width*3; j += 3 {
-			r, _ := strconv.Atoi(rowDataParts[j])
-			g, _ := strconv.Atoi(rowDataParts[j+1])
-			b, _ := strconv.Atoi(rowDataParts[j+2])
-			row[j/3] = Pixel{uint8(r), uint8(g), uint8(b)}
-		}
-		data[i] = row
+	if ppm.magicNumber != "P3" {
+		return nil, errors.New("Unsupported PPM format. Only P3 is supported.")
 	}
 
-	return &PPM{
-		data:        data,
-		width:       width,
-		height:      height,
-		magicNumber: magicNumber,
-		max:         uint8(max),
-	}, nil
-}
+	if !scanner.Scan() {
+		return nil, errors.New("EOF while reading width and height")
+	}
+	fmt.Sscanf(scanner.Text(), "%d %d", &ppm.width, &ppm.height)
 
-func (ppm *PPM) Size() (int, int) {
-	return ppm.width, ppm.height
+	if !scanner.Scan() {
+		return nil, errors.New("EOF while reading max value")
+	}
+	max, err := strconv.Atoi(scanner.Text())
+	if err != nil {
+		return nil, fmt.Errorf("Error converting max value to integer: %v", err)
+	}
+	ppm.max = uint8(max)
+
+	// Read pixel
+	ppm.data = make([][]Pixel, ppm.height)
+	for i := range ppm.data {
+		ppm.data[i] = make([]Pixel, ppm.width)
+		for j := 0; j < ppm.width; j++ {
+			// Exit if EOF is detected during pixel reading
+			if !scanner.Scan() {
+				if scanner.Err() == nil {
+					return nil, fmt.Errorf("Unexpected EOF while reading pixel data (row: %d, column: %d)", i, j)
+				}
+				return nil, scanner.Err()
+			}
+
+			line := scanner.Text()
+			values := strings.Fields(line)
+
+			// Ensure that there are enough values to read
+			if len(values) < 3 {
+				return nil, fmt.Errorf("Insufficient values for a pixel (row: %d, column: %d)", i, j)
+			}
+
+			for k := 0; k < 3; k++ {
+				r, err := strconv.Atoi(values[k])
+				if err != nil {
+					return nil, fmt.Errorf("Error converting pixel value to integer (row: %d, column: %d): %v", i, j, err)
+				}
+				ppm.data[i][j] = Pixel{uint8(r), uint8(r), uint8(r)} // Assuming grayscale, adjust if necessary
+				j++
+			}
+		}
+	}
+
+	return ppm, nil
 }
 
 func (ppm *PPM) At(x, y int) Pixel {
@@ -184,15 +198,23 @@ func (ppm *PPM) ToPGM() *PGM {
 }
 
 func (ppm *PPM) ToPBM() *PBM {
+
 	pbmData := make([][]bool, ppm.height)
+
 	for y := 0; y < ppm.height; y++ {
+
 		pbmData[y] = make([]bool, ppm.width)
+
 		for x := 0; x < ppm.width; x++ {
+			// And Here I Calculate the grayscale value by averaging RGB values
 			grayValue := (int(ppm.data[y][x].R) + int(ppm.data[y][x].G) + int(ppm.data[y][x].B)) / 3
-			pbmData[y][x] = grayValue > int(ppm.max)/2
+
+			// Here I Set the corresponding PBM pixel value based on the grayscale value
+			pbmData[y][x] = grayValue < int(ppm.max)/2
 		}
 	}
 
+	// I Create a new PBM object with the converted data
 	return &PBM{
 		data:        pbmData,
 		width:       ppm.width,
